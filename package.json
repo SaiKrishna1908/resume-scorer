@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "version": "1.0.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "init": "resumed init",
+    "start": "npx tsx src/index.ts && node scripts/create-resume.js",
+    "create-resume": "node scripts/create-resume.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.0.0",
+    "jsonresume-theme-even": "^0.17.1",
+    "jsonresume-theme-onepage-updated": "^1.0.3",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "openai": "^5.8.2",
+    "ora": "^8.2.0",
+    "puppeteer": "^13.0.0",
+    "resumed": "^3.0.0",
+    "uuid": "^11.1.0"
+  }
+}
