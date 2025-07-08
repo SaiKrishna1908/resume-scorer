@@ -6,6 +6,16 @@ const doc = new jsPDF();
 const margin = 10;
 let y = margin;
 const pageHeight = doc.internal.pageSize.getHeight();
+const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 6
+
+// Draw a section divider
+function drawSectionDivider(yPos) {
+  const lineMargin = 10;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setDrawColor(200); // light gray
+  doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
+}
+
 
 // Page overflow utility
 function checkPageBreak(doc, y, buffer = 10) {
@@ -47,8 +57,10 @@ const summaryText = doc.splitTextToSize(resume.basics.summary, 190);
 doc.text(summaryText, margin, y);
 y += summaryText.length * 5;
 
+drawSectionDivider(y)
+
 // Skills
-y += 6;
+y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("SKILLS", margin, y);
@@ -73,13 +85,15 @@ resume.skills.forEach(skill => {
   y += 6;
 });
 
+drawSectionDivider(y)
+y+=3
 
 // Work Experience
 y += 4;
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROFESSIONAL EXPERIENCE", margin, y);
-y += 6;
+y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 resume.work.forEach(job => {
   y = checkPageBreak(doc, y);
   doc.setFont("helvetica", "bold");
@@ -101,11 +115,15 @@ resume.work.forEach(job => {
   y += 6;
 });
 
+
+drawSectionDivider(y)
+y+=6
+
 // Projects
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROJECTS", margin, y);
-y += 6;
+y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 resume.projects.forEach(project => {
   y = checkPageBreak(doc, y);
   doc.setFont("helvetica", "bold");
@@ -133,11 +151,14 @@ resume.projects.forEach(project => {
   y += 4;
 });
 
+drawSectionDivider(y)
+y+=6
+
 // Certifications
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("CERTIFICATIONS", margin, y);
-y += 6;
+y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 doc.setFont("helvetica", "normal");
 resume.certificates.forEach(cert => {
   y = checkPageBreak(doc, y);
@@ -145,17 +166,19 @@ resume.certificates.forEach(cert => {
   const textWidth = doc.getTextWidth(certLine);
   doc.text(certLine, margin, y);
   doc.setTextColor(0, 0, 255);
-  doc.textWithLink(cert.url, margin + textWidth, y, { url: cert.url });
+  doc.textWithLink("Link", margin + textWidth, y, { url: cert.url });
   doc.setTextColor(0, 0, 0);
   y += 6;
 });
 
+drawSectionDivider(y)
+y+=3
 // Interests
 y += 4;
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROGRAMMING PROFILE", margin, y);
-y += 6;
+y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 resume.interests.forEach(profile => {
   y = checkPageBreak(doc, y);
   doc.text(`• ${profile.name} - ${profile.url}`, margin + 4, y);
