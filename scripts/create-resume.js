@@ -6,7 +6,7 @@ const doc = new jsPDF();
 const margin = 10;
 let y = margin;
 const pageHeight = doc.internal.pageSize.getHeight();
-const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 6
+const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 6;
 
 // Draw a section divider
 function drawSectionDivider(yPos) {
@@ -15,7 +15,6 @@ function drawSectionDivider(yPos) {
   doc.setDrawColor(200); // light gray
   doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
 }
-
 
 // Page overflow utility
 function checkPageBreak(doc, y, buffer = 10) {
@@ -26,7 +25,7 @@ function checkPageBreak(doc, y, buffer = 10) {
   return y;
 }
 
-// Header (centered)
+// Header
 const pageWidth = doc.internal.pageSize.getWidth();
 doc.setFontSize(18);
 doc.setFont("helvetica", "bold");
@@ -54,10 +53,14 @@ doc.text("SUMMARY", margin, y);
 y += 6;
 doc.setFont("helvetica", "normal");
 const summaryText = doc.splitTextToSize(resume.basics.summary, 190);
-doc.text(summaryText, margin, y);
-y += summaryText.length * 5;
+summaryText.forEach(line => {
+  y = checkPageBreak(doc, y);
+  doc.text(line, margin, y);
+  y += 5;
+});
 
-drawSectionDivider(y)
+drawSectionDivider(y);
+y += 3;
 
 // Skills
 y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
@@ -66,27 +69,48 @@ doc.setFont("helvetica", "bold");
 doc.text("SKILLS", margin, y);
 y += 6;
 
+const MAX_LINE_WIDTH = pageWidth - 2 * margin;
+
 resume.skills.forEach(skill => {
   y = checkPageBreak(doc, y);
 
   const label = `${skill.name}:`;
-
-  // First draw the label in bold
   doc.setFont("helvetica", "bold");
   doc.text(label, margin, y);
 
-  // Then measure its width (AFTER setting the font)
   const labelWidth = doc.getTextWidth(label + " ");
-
-  // Now draw the keywords in normal font
+  const startX = margin + labelWidth;
   doc.setFont("helvetica", "normal");
-  doc.text(skill.keywords.join(", "), margin + labelWidth, y);
 
-  y += 6;
+  let currentLine = "";
+  let currentX = startX;
+
+  skill.keywords.forEach((keyword, index) => {
+    const keywordText = (index < skill.keywords.length - 1) ? `${keyword}, ` : keyword;
+    const keywordWidth = doc.getTextWidth(keywordText);
+
+    if (currentX + keywordWidth > pageWidth - margin) {
+      // Write current line
+      doc.text(currentLine.trim(), startX, y);
+      y += 6;
+      y = checkPageBreak(doc, y);
+      currentLine = "";
+      currentX = startX;
+    }
+
+    currentLine += keywordText;
+    currentX += keywordWidth;
+  });
+
+  // Print remaining line
+  if (currentLine) {
+    doc.text(currentLine.trim(), startX, y);
+    y += 6;
+  }
 });
 
-drawSectionDivider(y)
-y+=3
+drawSectionDivider(y);
+y += 3;
 
 // Work Experience
 y += 4;
@@ -94,6 +118,7 @@ y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROFESSIONAL EXPERIENCE", margin, y);
 y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+
 resume.work.forEach(job => {
   y = checkPageBreak(doc, y);
   doc.setFont("helvetica", "bold");
@@ -104,26 +129,33 @@ resume.work.forEach(job => {
   y += 6;
 
   const jobSummary = doc.splitTextToSize(job.summary, 190);
-  doc.text(jobSummary, margin, y);
-  y += jobSummary.length * 5;
-
-  job.highlights.forEach(point => {
+  jobSummary.forEach(line => {
     y = checkPageBreak(doc, y);
-    doc.text(`• ${point}`, margin + 4, y);
+    doc.text(line, margin, y);
     y += 5;
   });
+
+  job.highlights.forEach(point => {
+    const lines = doc.splitTextToSize(`• ${point}`, 190);
+    lines.forEach(line => {
+      y = checkPageBreak(doc, y);
+      doc.text(line, margin + 4, y);
+      y += 5;
+    });
+  });
+
   y += 6;
 });
 
-
-drawSectionDivider(y)
-y+=6
+drawSectionDivider(y);
+y += 6;
 
 // Projects
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROJECTS", margin, y);
 y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+
 resume.projects.forEach(project => {
   y = checkPageBreak(doc, y);
   doc.setFont("helvetica", "bold");
@@ -144,15 +176,19 @@ resume.projects.forEach(project => {
   });
 
   (project.highlights || []).forEach(pt => {
-    y = checkPageBreak(doc, y);
-    doc.text(`• ${pt}`, margin + 6, y);
-    y += 5;
+    const lines = doc.splitTextToSize(`• ${pt}`, 190);
+    lines.forEach(line => {
+      y = checkPageBreak(doc, y);
+      doc.text(line, margin + 6, y);
+      y += 5;
+    });
   });
+
   y += 4;
 });
 
-drawSectionDivider(y)
-y+=6
+drawSectionDivider(y);
+y += 6;
 
 // Certifications
 y = checkPageBreak(doc, y);
@@ -160,6 +196,7 @@ doc.setFont("helvetica", "bold");
 doc.text("CERTIFICATIONS", margin, y);
 y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 doc.setFont("helvetica", "normal");
+
 resume.certificates.forEach(cert => {
   y = checkPageBreak(doc, y);
   const certLine = `${cert.name} - `;
@@ -171,14 +208,16 @@ resume.certificates.forEach(cert => {
   y += 6;
 });
 
-drawSectionDivider(y)
-y+=3
-// Interests
+drawSectionDivider(y);
+y += 3;
+
+// Programming Profiles
 y += 4;
 y = checkPageBreak(doc, y);
 doc.setFont("helvetica", "bold");
 doc.text("PROGRAMMING PROFILE", margin, y);
 y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+
 resume.interests.forEach(profile => {
   y = checkPageBreak(doc, y);
   doc.text(`• ${profile.name} - ${profile.url}`, margin + 4, y);

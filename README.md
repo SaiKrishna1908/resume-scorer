@@ -33,3 +33,12 @@ Run the optimization script:
 ```
 npm run start
 ```
+
+## Tools Available for the LLM
+
+```
+1. Job Description Parser - Job Title, Company Name, Domain
+2. ATS - a list of ATS keywords grouped by sub-heading
+3. Resume Section Editor - edits a section of the resume (skills, professional exp, summary, projects)
+4. Project Enhancer Tool - Give 2 strong impact projects for this particular JD
+```
