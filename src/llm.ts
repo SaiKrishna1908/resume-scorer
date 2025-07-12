@@ -1,24 +1,19 @@
+import type { AIMessage } from "../types";
 import { openai } from "./ai";
+import { zodFunction  } from "openai/helpers/zod";
 
-export const runLLM = async ({ systemPrompt, userMessage }: { systemPrompt: string, userMessage: string }) => {
+export const runLLM = async ({ messages, tools }: { messages: AIMessage[], tools: any[] }) => {
+
+  const formattedTools = tools.map(zodFunction)
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-
     temperature: 0.1,
-
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt
-      },
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ],
+    messages: messages,
+    tools: formattedTools,
+    tool_choice: 'auto',
+    parallel_tool_calls: false
   });
 
-  let jsonResponse = response.choices[0].message.content?.replace('```json', '')
-  jsonResponse = jsonResponse?.replace('```', '')
-  return JSON.parse(jsonResponse!);
+  console.log(`response from llm: ${response}`)
+  return response.choices[0].message
 };

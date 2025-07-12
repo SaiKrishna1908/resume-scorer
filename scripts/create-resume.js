@@ -6,19 +6,19 @@ const doc = new jsPDF();
 const margin = 10;
 let y = margin;
 const pageHeight = doc.internal.pageSize.getHeight();
-const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 6;
+const pageWidth = doc.internal.pageSize.getWidth();
+const MAX_LINE_WIDTH = pageWidth - 2 * margin;
+const LINE_SPACING = 4;
 
-// Draw a section divider
+// Draw section divider
 function drawSectionDivider(yPos) {
-  const lineMargin = 10;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  doc.setDrawColor(200); // light gray
-  doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
+  doc.setDrawColor(200);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
 }
 
-// Page overflow utility
-function checkPageBreak(doc, y, buffer = 10) {
-  if (y + buffer > pageHeight) {
+// Page overflow check
+function checkPageBreak(y, buffer = 10) {
+  if (y + buffer > pageHeight - margin) {
     doc.addPage();
     return margin;
   }
@@ -26,202 +26,193 @@ function checkPageBreak(doc, y, buffer = 10) {
 }
 
 // Header
-const pageWidth = doc.internal.pageSize.getWidth();
 doc.setFontSize(18);
 doc.setFont("helvetica", "bold");
 let nameWidth = doc.getTextWidth(resume.basics.name);
+doc.setTextColor(0, 0, 0);
 doc.text(resume.basics.name, (pageWidth - nameWidth) / 2, y);
 
-doc.setFontSize(11);
+doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
-y += 6;
+y += LINE_SPACING + 1;
 const contactLine = `${resume.basics.phone} | ${resume.basics.email}`;
-let contactWidth = doc.getTextWidth(contactLine);
-doc.text(contactLine, (pageWidth - contactWidth) / 2, y);
-
-y += 5;
+doc.text(contactLine, (pageWidth - doc.getTextWidth(contactLine)) / 2, y);
+y += LINE_SPACING;
 const linksLine = `${resume.basics.profiles[0].url} | ${resume.basics.profiles[1].url}`;
-let linksWidth = doc.getTextWidth(linksLine);
-doc.text(linksLine, (pageWidth - linksWidth) / 2, y);
+doc.text(linksLine, (pageWidth - doc.getTextWidth(linksLine)) / 2, y);
 
-y += 10;
+y += LINE_SPACING;
 
-// Summary
-y = checkPageBreak(doc, y);
+// SUMMARY
+y = checkPageBreak(y);
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("SUMMARY", margin, y);
-y += 6;
+y += LINE_SPACING;
+
 doc.setFont("helvetica", "normal");
-const summaryText = doc.splitTextToSize(resume.basics.summary, 190);
-summaryText.forEach(line => {
-  y = checkPageBreak(doc, y);
+doc.setFontSize(9);
+doc.setTextColor(0, 0, 0);
+doc.splitTextToSize(resume.basics.summary, MAX_LINE_WIDTH).forEach(line => {
+  y = checkPageBreak(y);
   doc.text(line, margin, y);
-  y += 5;
+  y += LINE_SPACING;
 });
 
 drawSectionDivider(y);
-y += 3;
+y += 2;
 
-// Skills
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
-y = checkPageBreak(doc, y);
+// SKILLS
+y = checkPageBreak(y);
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("SKILLS", margin, y);
-y += 6;
+y += LINE_SPACING;
 
-const MAX_LINE_WIDTH = pageWidth - 2 * margin;
+doc.setFont("helvetica", "normal");
+doc.setFontSize(9);
+doc.setTextColor(0, 0, 0);
 
 resume.skills.forEach(skill => {
-  y = checkPageBreak(doc, y);
-
+  y = checkPageBreak(y);
   const label = `${skill.name}:`;
+  const labelWidth = doc.getTextWidth(label + " ");
   doc.setFont("helvetica", "bold");
   doc.text(label, margin, y);
 
-  const labelWidth = doc.getTextWidth(label + " ");
-  const startX = margin + labelWidth;
   doc.setFont("helvetica", "normal");
-
-  let currentLine = "";
-  let currentX = startX;
-
-  skill.keywords.forEach((keyword, index) => {
-    const keywordText = (index < skill.keywords.length - 1) ? `${keyword}, ` : keyword;
-    const keywordWidth = doc.getTextWidth(keywordText);
-
-    if (currentX + keywordWidth > pageWidth - margin) {
-      // Write current line
-      doc.text(currentLine.trim(), startX, y);
-      y += 6;
-      y = checkPageBreak(doc, y);
-      currentLine = "";
-      currentX = startX;
-    }
-
-    currentLine += keywordText;
-    currentX += keywordWidth;
-  });
-
-  // Print remaining line
-  if (currentLine) {
-    doc.text(currentLine.trim(), startX, y);
-    y += 6;
-  }
+  const text = skill.keywords.join(", ");
+  doc.text(text, margin + labelWidth, y);
+  y += LINE_SPACING;
 });
 
 drawSectionDivider(y);
-y += 3;
+y += 2;
 
-// Work Experience
-y += 4;
-y = checkPageBreak(doc, y);
+// EXPERIENCE
+y = checkPageBreak(y);
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("PROFESSIONAL EXPERIENCE", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += LINE_SPACING;
 
 resume.work.forEach(job => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(y);
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
   doc.text(`${job.name} - ${job.position}`, margin, y);
-  y += 6;
+  y += LINE_SPACING;
+
   doc.setFont("helvetica", "normal");
   doc.text(`${job.location} | ${job.startDate} – ${job.endDate || "Present"}`, margin, y);
-  y += 6;
+  y += LINE_SPACING;
 
-  const jobSummary = doc.splitTextToSize(job.summary, 190);
-  jobSummary.forEach(line => {
-    y = checkPageBreak(doc, y);
-    doc.text(line, margin, y);
-    y += 5;
-  });
+  // doc.splitTextToSize(job.summary, MAX_LINE_WIDTH).forEach(line => {
+  //   y = checkPageBreak(y);
+  //   doc.text(line, margin, y);
+  //   y += LINE_SPACING;
+  // });
 
   job.highlights.forEach(point => {
-    const lines = doc.splitTextToSize(`• ${point}`, 190);
-    lines.forEach(line => {
-      y = checkPageBreak(doc, y);
+    doc.splitTextToSize(`• ${point}`, MAX_LINE_WIDTH).forEach(line => {
+      y = checkPageBreak(y);
       doc.text(line, margin + 4, y);
-      y += 5;
+      y += LINE_SPACING;
     });
   });
 
-  y += 6;
+  y += LINE_SPACING;
 });
 
 drawSectionDivider(y);
-y += 6;
+y += 2;
 
-// Projects
-y = checkPageBreak(doc, y);
+// PROJECTS
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("PROJECTS", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += LINE_SPACING;
 
 resume.projects.forEach(project => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(y);
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
   doc.text(project.name, margin, y);
 
   const nameWidth = doc.getTextWidth(project.name + " ");
-  doc.setTextColor(0, 0, 255);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 255);
   doc.textWithLink(project.url, margin + nameWidth, y, { url: project.url });
   doc.setTextColor(0, 0, 0);
-  y += 5;
+  y += LINE_SPACING;
 
-  const wrappedDescription = doc.splitTextToSize(project.description, 190);
-  wrappedDescription.forEach(line => {
-    y = checkPageBreak(doc, y);
+  doc.splitTextToSize(project.description, MAX_LINE_WIDTH).forEach(line => {
+    y = checkPageBreak(y);
     doc.text(line, margin + 4, y);
-    y += 5;
+    y += LINE_SPACING;
   });
 
   (project.highlights || []).forEach(pt => {
-    const lines = doc.splitTextToSize(`• ${pt}`, 190);
-    lines.forEach(line => {
-      y = checkPageBreak(doc, y);
+    doc.splitTextToSize(`• ${pt}`, MAX_LINE_WIDTH).forEach(line => {
+      y = checkPageBreak(y);
       doc.text(line, margin + 6, y);
-      y += 5;
+      y += LINE_SPACING;
     });
   });
 
-  y += 4;
+  y += LINE_SPACING;
 });
 
 drawSectionDivider(y);
-y += 6;
+y += 2;
 
-// Certifications
-y = checkPageBreak(doc, y);
+// CERTIFICATIONS
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("CERTIFICATIONS", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += LINE_SPACING;
+
 doc.setFont("helvetica", "normal");
+doc.setFontSize(9);
+doc.setTextColor(0, 0, 0);
 
 resume.certificates.forEach(cert => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(y);
   const certLine = `${cert.name} - `;
   const textWidth = doc.getTextWidth(certLine);
   doc.text(certLine, margin, y);
   doc.setTextColor(0, 0, 255);
   doc.textWithLink("Link", margin + textWidth, y, { url: cert.url });
   doc.setTextColor(0, 0, 0);
-  y += 6;
+  y += LINE_SPACING;
 });
 
 drawSectionDivider(y);
-y += 3;
+y += 2;
 
-// Programming Profiles
-y += 4;
-y = checkPageBreak(doc, y);
+// PROGRAMMING PROFILE
 doc.setFont("helvetica", "bold");
+doc.setFontSize(10);
+doc.setTextColor(102, 0, 51);
 doc.text("PROGRAMMING PROFILE", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += LINE_SPACING;
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(9);
+doc.setTextColor(0, 0, 0);
 
 resume.interests.forEach(profile => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(y);
   doc.text(`• ${profile.name} - ${profile.url}`, margin + 4, y);
-  y += 5;
+  y += LINE_SPACING;
 });
 
+// Save PDF
 doc.save("/home/krishna/Downloads/Sai_Krishna_Gadiraju_Resume.pdf");

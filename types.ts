@@ -8,3 +8,10 @@ export type AIMessage =
 export interface ToolFn<A = any, T = any> {
   (input: { userMessage: string; toolArgs: A }): Promise<T>
 }
+
+export type AboutCompany = {jobTitle: string, companyDomain: string, jobDescription: string, nextStep: string}
+
+export type ATSKeywords = {
+  name: string,
+  keywords: string[]
+}
