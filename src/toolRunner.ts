@@ -35,14 +35,14 @@ export const runTool = async (
     }
 
     case "editResumeSkills": {
-      const { companyDomain, atsKeywords } = toolArgs;
-      const result = await resumeSkillsSectionEditor(companyDomain, atsKeywords);
+      const { companyDomain, atsKeywords, existingSkills } = toolArgs;
+      const result = await resumeSkillsSectionEditor(companyDomain, existingSkills ,atsKeywords);
       return result;
     }
 
     case "editResumeExperience": {
-      const { jobTitle, companyDomain, atsKeywords } = toolArgs;
-      const result = await resumeProfessionalExperienceSectionEditor(jobTitle, companyDomain, atsKeywords);
+      const { jobTitle, companyDomain, atsKeywords, existingExperiences } = toolArgs;
+      const result = await resumeProfessionalExperienceSectionEditor(jobTitle, companyDomain, atsKeywords, existingExperiences);
       return result;
     }
 

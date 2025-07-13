@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "fs/promises";
 import type { ATSKeywords } from "../types";
 import path from "path";
+import { fileURLToPath } from "url";
 
 export class Resume {
   private static instance: Resume | null = null;
@@ -43,9 +44,11 @@ export class Resume {
   }
 
   async updateResume(): Promise<void> {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
     const OUTPUT_RESUME_PATH = path.resolve(__dirname, "../output/resume.json");
     const RESUME_PATH = path.resolve(__dirname, "../resume/resume.json");
-    const [resume] = JSON.parse(await readFile(RESUME_PATH, "utf-8"));
+    const resume = JSON.parse(await readFile(RESUME_PATH, "utf-8"));
     resume.basics.summary = this.summary;
     resume.skills = this.atsSkills;
     await writeFile(OUTPUT_RESUME_PATH, JSON.stringify(resume, null, 2), "utf-8");

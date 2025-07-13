@@ -1,6 +1,7 @@
 import type { AboutCompany, ATSKeywords } from "../types";
 import { runLLM } from "./llm";
 import { addMessages } from "./memory";
+import { Resume } from "./resume";
 
 export const fetchJobTitleCompanyDomainAndJobDescriptionFromUrl = async (
   jobDescription: string
@@ -79,21 +80,30 @@ Return 2-3 concise, impactful sentences.
     messages: [{ role: "user", content: prompt }],
     tools: [],
   });
+  
 
-  return { "summary" : response.content![0]};
+  Resume.getInstance().setSummary(response.content!)
+
+  return { "summary" : response.content!};
 };
 
 export const resumeSkillsSectionEditor = async (
   companyDomain: string,
-  atsKeywords: ATSKeywords[]
+  atsKeywords: ATSKeywords[],
+  existingSkills: ATSKeywords[]
 ): Promise<ATSKeywords[]> => {
   const prompt = `
 Given the domain "${companyDomain}", refine the following skill categories and keywords to better match ATS expectations.
 
-Skills:
+ATS Keywords:
 ${JSON.stringify(atsKeywords, null, 2)}
 
-Return a JSON array in the same format.
+Existing Skills:
+${JSON.stringify(existingSkills, null, 2)}
+
+Merge the ATS keywords with the existing skills, ensuring no duplicates. Return a JSON array in the same format.
+
+Give response in valid JSON format
 `;
 
   const response = await runLLM({
@@ -101,17 +111,23 @@ Return a JSON array in the same format.
     tools: [],
   });
 
-  return JSON.parse(
+  const responseInJson =  JSON.parse(JSON.parse(
     JSON.stringify(response.content)
       .replace(/```json|```/g, "")
       .trim()
-  );
+  ));
+
+    Resume.getInstance().setAtsSkills(responseInJson)
+
+  console.log("abcdefg: " + JSON.stringify(responseInJson))
+  return responseInJson
 };
 
 export const resumeProfessionalExperienceSectionEditor = async (
   jobTitle: string,
   companyDomain: string,
-  updatedSkills: ATSKeywords[]
+  updatedSkills: ATSKeywords[],
+  existingExperiences: string[][]
 ): Promise<string[][]> => {
   const prompt = `
 Rewrite the professional experience section to align with the job title "${jobTitle}" in the "${companyDomain}" domain.
@@ -119,7 +135,10 @@ Highlight use of these skills: ${updatedSkills
     .flatMap((s) => s.keywords)
     .join(", ")}.
 
-Return grouped bullet points as JSON in this format:
+Existing Experiences:
+${JSON.stringify(existingExperiences, null, 2)}
+
+Update each job experience with relevant skills and achievements. Return grouped bullet points as JSON in this format:
 
 [
   ["point1", "point2", ...], // Experience 1
@@ -132,11 +151,11 @@ Return grouped bullet points as JSON in this format:
     tools: [],
   });
 
-  return JSON.parse(
+  return JSON.parse(JSON.parse(
     JSON.stringify(response.content)
       .replace(/```json|```/g, "")
       .trim()
-  );
+  ));
 };
 
 export const projectEnhancerTool = async (

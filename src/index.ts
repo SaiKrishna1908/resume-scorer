@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { PROMPT_RESUME_TAILOR } from "./constants";
 import { runAgent } from "./agent";
 import z from "zod";
+import { Resume } from "./resume";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,6 +102,12 @@ async function main() {
           keywords: z.array(z.string()),
         })
       ),
+      existingSkills: z.array(
+        z.object({
+          name: z.string(),
+          keywords: z.array(z.string())
+        })
+      ).describe("Pass the existing skills from the users resume"),
       companyDomain: z
         .string()
         .describe("Business domain of the job (e.g., healthcare, fintech)"),
@@ -118,7 +125,10 @@ async function main() {
           name: z.string(),
           keywords: z.array(z.string()),
         })
-      ),
+      ).describe("Updated ATS Keywords to increase resume ATS score"),
+      existingExperiences: z.array(
+        z.array(z.string())
+      ).describe("Give existing professional experiences for each company"),
       jobTitle: z
         .string()
         .describe("Job title to tailor experience bullets for"),
@@ -153,10 +163,15 @@ async function main() {
       readFile(RESUME_PATH, "utf-8"),
     ]);
 
+    const resumeObj = Resume.getInstance()
     const resume = JSON.parse(resumeRaw);
     const prompt = `${PROMPT_RESUME_TAILOR} \n this is my resume: \n ${JSON.stringify(
       resume
     )} \n\n this is the job description: ${jobDescriptionRaw}`;
+
+    resumeObj.setSummary(resume.basics.summary)
+    resumeObj.setAtsSkills(resume.skills)
+    resumeObj.setProfessionalExperience(resume.work.map((experience: any) => experience.highlights))
     await runAgent({
       userMessage: prompt,
       tools: [
@@ -168,6 +183,7 @@ async function main() {
         enhanceProjectTool,
       ],
     });
+    resumeObj.updateResume()
   } catch (err) {
     console.error("Error:", err);
     process.exit(1);
