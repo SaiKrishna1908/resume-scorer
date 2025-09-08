@@ -179,3 +179,5 @@ db.json
 
 resume/
 output/
+
+.vscode/

@@ -6,13 +6,19 @@ const doc = new jsPDF();
 const margin = 10;
 let y = margin;
 const pageHeight = doc.internal.pageSize.getHeight();
-const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 6;
+const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 3;
+
+// Colors
+const headingColor = [0, 51, 102]; // Dark blue for headings
+const subHeadingColor = [51, 51, 51]; // Dark gray for subheadings
+const linkColor = [0, 0, 255]; // Blue for links
+const textColor = [0, 0, 0]; // Black for text
 
 // Draw a section divider
 function drawSectionDivider(yPos) {
   const lineMargin = 10;
   const pageWidth = doc.internal.pageSize.getWidth();
-  doc.setDrawColor(200); // light gray
+  doc.setDrawColor(200); // light gray  
   doc.line(lineMargin, yPos, pageWidth - lineMargin, yPos);
 }
 
@@ -27,15 +33,24 @@ function checkPageBreak(doc, y, buffer = 10) {
 
 // Header
 const pageWidth = doc.internal.pageSize.getWidth();
-doc.setFontSize(18);
+doc.setFontSize(16);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 let nameWidth = doc.getTextWidth(resume.basics.name);
 doc.text(resume.basics.name, (pageWidth - nameWidth) / 2, y);
-
-doc.setFontSize(11);
-doc.setFont("helvetica", "normal");
 y += 6;
-const contactLine = `${resume.basics.phone} | ${resume.basics.email}`;
+
+doc.setFontSize(12);
+doc.setFont("helvetica", "italic");
+doc.setTextColor(...subHeadingColor);
+let labelWidth = doc.getTextWidth(resume.basics.label);
+doc.text(resume.basics.label, (pageWidth - labelWidth) / 2, y);
+y += 6;
+
+doc.setFontSize(10);
+doc.setFont("helvetica", "normal");
+doc.setTextColor(...textColor);
+const contactLine = `${resume.basics.phone} | ${resume.basics.email} | ${resume.basics.location.city}, TX`;
 let contactWidth = doc.getTextWidth(contactLine);
 doc.text(contactLine, (pageWidth - contactWidth) / 2, y);
 
@@ -44,43 +59,57 @@ const linksLine = `${resume.basics.profiles[0].url} | ${resume.basics.profiles[1
 let linksWidth = doc.getTextWidth(linksLine);
 doc.text(linksLine, (pageWidth - linksWidth) / 2, y);
 
-y += 10;
+drawSectionDivider(y+2)
+
+y += 7;
 
 // Summary
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 doc.text("SUMMARY", margin, y);
 y += 6;
+doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
-const summaryText = doc.splitTextToSize(resume.basics.summary, 190);
+doc.setTextColor(...textColor);
+const summaryText = doc.splitTextToSize(resume.basics.summary, pageWidth - 2 * margin);
 summaryText.forEach(line => {
   y = checkPageBreak(doc, y);
   doc.text(line, margin, y);
-  y += 5;
+  y += 4;
 });
 
-drawSectionDivider(y);
-y += 3;
+y-=4
+
+drawSectionDivider(y + 2);
+
+y += 7;
 
 // Skills
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 doc.text("SKILLS", margin, y);
 y += 6;
 
 const MAX_LINE_WIDTH = pageWidth - 2 * margin;
 
 resume.skills.forEach(skill => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(doc, y, 10);
 
-  const label = `${skill.name}:`;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(...subHeadingColor);
+  const label = `${skill.name}:`;
   doc.text(label, margin, y);
 
   const labelWidth = doc.getTextWidth(label + " ");
   const startX = margin + labelWidth;
+  doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(...textColor);
 
   let currentLine = "";
   let currentX = startX;
@@ -90,9 +119,8 @@ resume.skills.forEach(skill => {
     const keywordWidth = doc.getTextWidth(keywordText);
 
     if (currentX + keywordWidth > pageWidth - margin) {
-      // Write current line
       doc.text(currentLine.trim(), startX, y);
-      y += 6;
+      y += 4;
       y = checkPageBreak(doc, y);
       currentLine = "";
       currentX = startX;
@@ -102,33 +130,45 @@ resume.skills.forEach(skill => {
     currentX += keywordWidth;
   });
 
-  // Print remaining line
   if (currentLine) {
     doc.text(currentLine.trim(), startX, y);
-    y += 6;
+    y += 4;
   }
 });
 
-drawSectionDivider(y);
-y += 3;
+y-=4
 
-// Work Experience
-y += 4;
+drawSectionDivider(y + 2);
+y += 7;
+
+// Professional Experience
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 doc.text("PROFESSIONAL EXPERIENCE", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += 6;
 
 resume.work.forEach(job => {
-  y = checkPageBreak(doc, y);
+  y = checkPageBreak(doc, y, 10);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(...subHeadingColor);
   doc.text(`${job.name} - ${job.position}`, margin, y);
-  y += 6;
-  doc.setFont("helvetica", "normal");
-  doc.text(`${job.location} | ${job.startDate} – ${job.endDate || "Present"}`, margin, y);
-  y += 6;
 
-  const jobSummary = doc.splitTextToSize(job.summary, 190);
+  const dateText = `${job.startDate} – ${job.endDate || "Present"}`;
+  const dateWidth = doc.getTextWidth(dateText);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...textColor);
+  doc.text(dateText, pageWidth - margin - dateWidth, y);
+  y += 4;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(job.location, margin, y);
+  y += 4;
+
+  const jobSummary = doc.splitTextToSize(job.summary, pageWidth - 2 * margin);
   jobSummary.forEach(line => {
     y = checkPageBreak(doc, y);
     doc.text(line, margin, y);
@@ -136,92 +176,145 @@ resume.work.forEach(job => {
   });
 
   job.highlights.forEach(point => {
-    const lines = doc.splitTextToSize(`• ${point}`, 190);
+    const lines = doc.splitTextToSize(`• ${point}`, pageWidth - 2 * margin - 4);
     lines.forEach(line => {
       y = checkPageBreak(doc, y);
-      doc.text(line, margin + 4, y);
-      y += 5;
+      doc.text(line, margin, y);
+      y += 4;
     });
   });
 
-  y += 6;
+  y += 3;
 });
 
-drawSectionDivider(y);
+y-=4;
+
+drawSectionDivider(y + 2);
+y += 7;
+
+// Education
+y = checkPageBreak(doc, y);
+doc.setFontSize(10);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
+doc.text("EDUCATION", margin, y);
 y += 6;
+
+resume.education.forEach(edu => {
+  y = checkPageBreak(doc, y);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...subHeadingColor);
+  doc.text(`${edu.studyType} in ${edu.area}`, margin, y);
+  // y += 4;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...textColor);
+  const educationDetails = `${edu.institution}, GPA: ${edu.gpa}`;
+  doc.text(educationDetails, pageWidth - margin - doc.getTextWidth(educationDetails), y);
+  // doc.text(, margin, y);
+  y += 4;
+});
+
+y-=4
+
+drawSectionDivider(y + 2);
+y += 7;
 
 // Projects
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 doc.text("PROJECTS", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += 6;
 
 resume.projects.forEach(project => {
   y = checkPageBreak(doc, y);
+  doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
+  doc.setTextColor(...subHeadingColor);
   doc.text(project.name, margin, y);
 
   const nameWidth = doc.getTextWidth(project.name + " ");
-  doc.setTextColor(0, 0, 255);
-  doc.setFont("helvetica", "normal");
-  doc.textWithLink(project.url, margin + nameWidth, y, { url: project.url });
-  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(9);
+  doc.setTextColor(...linkColor);
+  doc.textWithLink(`(${project.url})`, margin + nameWidth, y, { url: project.url });
+  doc.setTextColor(...textColor);
   y += 5;
 
-  const wrappedDescription = doc.splitTextToSize(project.description, 190);
+  doc.setFont("helvetica", "normal");
+  const wrappedDescription = doc.splitTextToSize(project.description, pageWidth - 2 * margin);
   wrappedDescription.forEach(line => {
     y = checkPageBreak(doc, y);
-    doc.text(line, margin + 4, y);
+    doc.text(line, margin, y);
     y += 5;
   });
 
   (project.highlights || []).forEach(pt => {
-    const lines = doc.splitTextToSize(`• ${pt}`, 190);
+    const lines = doc.splitTextToSize(`• ${pt}`, pageWidth - 2 * margin - 4);
     lines.forEach(line => {
       y = checkPageBreak(doc, y);
-      doc.text(line, margin + 6, y);
-      y += 5;
+      doc.text(line, margin + 4, y);
+      y += 4.0;
     });
   });
 
-  y += 4;
+  y += 2;
 });
 
-drawSectionDivider(y);
-y += 6;
+y-=6;
+drawSectionDivider(y + 2);
+y += 7;
 
 // Certifications
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
+doc.setTextColor(...headingColor);
 doc.text("CERTIFICATIONS", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+y += 6;
+doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
+doc.setTextColor(...textColor);
 
 resume.certificates.forEach(cert => {
   y = checkPageBreak(doc, y);
-  const certLine = `${cert.name} - `;
+  const certLine = `• ${cert.name} - `;
   const textWidth = doc.getTextWidth(certLine);
   doc.text(certLine, margin, y);
-  doc.setTextColor(0, 0, 255);
+  doc.setTextColor(...linkColor);
   doc.textWithLink("Link", margin + textWidth, y, { url: cert.url });
-  doc.setTextColor(0, 0, 0);
-  y += 6;
+  doc.setTextColor(...textColor);
+  y += 3.8;
 });
 
-drawSectionDivider(y);
-y += 3;
+y-=4
+
+drawSectionDivider(y + 2);
+y += 7;
 
 // Programming Profiles
-y += 4;
 y = checkPageBreak(doc, y);
+doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
-doc.text("PROGRAMMING PROFILE", margin, y);
-y += SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS;
+doc.setTextColor(...headingColor);
+doc.text("PROGRAMMING PROFILES", margin, y);
+y += 6;
 
 resume.interests.forEach(profile => {
   y = checkPageBreak(doc, y);
-  doc.text(`• ${profile.name} - ${profile.url}`, margin + 4, y);
-  y += 5;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...textColor);
+  const profileLine = `• ${profile.name} - `;
+  const profileWidth = doc.getTextWidth(profileLine);
+  doc.text(profileLine, margin, y);
+  doc.setTextColor(...linkColor);
+  doc.textWithLink(profile.url, margin + profileWidth, y, { url: profile.url });
+  doc.setTextColor(...textColor);
+  y += 3.8;
 });
 
 doc.save("/home/krishna/Downloads/Sai_Krishna_Gadiraju_Resume.pdf");

@@ -2,9 +2,7 @@ import { openai } from "./ai";
 
 export const runLLM = async ({ systemPrompt, userMessage }: { systemPrompt: string, userMessage: string }) => {
   const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-
-    temperature: 0.1,
+    model: "gpt-5-nano",
 
     messages: [
       {
