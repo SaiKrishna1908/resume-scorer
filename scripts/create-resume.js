@@ -1,6 +1,9 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import resume from "../output/resume.json" assert { type: "json" };
+import path from "path";
+import os from "os";
+import { existsSync, mkdirSync } from "fs";
 
 const doc = new jsPDF();
 const margin = 10;
@@ -168,12 +171,14 @@ resume.work.forEach(job => {
   doc.text(job.location, margin, y);
   y += 4;
 
-  const jobSummary = doc.splitTextToSize(job.summary, pageWidth - 2 * margin);
-  jobSummary.forEach(line => {
-    y = checkPageBreak(doc, y);
-    doc.text(line, margin, y);
-    y += 5;
-  });
+  if (job.summary) {
+    const jobSummary = doc.splitTextToSize(job.summary, pageWidth - 2 * margin);
+    jobSummary.forEach(line => {
+      y = checkPageBreak(doc, y);
+      doc.text(line, margin, y);
+      y += 5;
+    });
+  }  
 
   job.highlights.forEach(point => {
     const lines = doc.splitTextToSize(`• ${point}`, pageWidth - 2 * margin - 4);
@@ -317,4 +322,13 @@ resume.interests.forEach(profile => {
   y += 3.8;
 });
 
-doc.save("/home/krishna/Downloads/Sai_Krishna_Gadiraju_Resume.pdf");
+const downloadsDir = path.join(os.homedir(), "Downloads");
+const copyDir = path.join(downloadsDir, "resumes")
+const companyDir = path.join(copyDir, process.argv[3] ?? 'default')
+if (!existsSync(companyDir)) {
+  mkdirSync(companyDir, {recursive: true})
+}
+const fileName = `Sai_Krishna_Gadiraju_Resume.pdf`;
+
+doc.save(path.join(downloadsDir, fileName));
+doc.save(path.join(companyDir, fileName))

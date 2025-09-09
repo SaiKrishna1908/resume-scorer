@@ -6,7 +6,8 @@
   "scripts": {
     "init": "resumed init",
     "start": "npx tsx src/index.ts && node scripts/create-resume.js",
-    "create-resume": "node scripts/create-resume.js"
+    "create-resume": "node scripts/create-resume.js",
+    "resume": "node scripts/create-resume.js"
   },
   "dependencies": {
     "dotenv": "^17.0.0",

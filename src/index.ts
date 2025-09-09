@@ -27,12 +27,12 @@ async function main() {
       skills: resume.skills,
       work: resume.work
     };
-
-    const systemPrompt = `You are an expert resume optimization agent. Given a job description (as plain text) and a resume (in JSON Resume format), extract relevant ATS keywords and update only the summary, skills, and work sections of the resume. The summary should highlight alignment with the role. The skills section should include relevant tools, technologies, or concepts from the job description. In the work section, revise each job’s summary and highlights to reflect responsibilities and achievements that match the job’s focus, using action-oriented language and measurable impact where possible. Do not modify any other parts of the resume. Output only the updated JSON with the changed fields.`;
+    
     const userMessage = `Job Description:\n${jobDescriptionRaw}\n\nResume (only summary, skills, and work sections):\n${JSON.stringify(partialResume, null, 2)}`;
 
     const response = await runLLM({ systemPrompt: PROMPT_RESUME_TAILOR, userMessage });
     
+    resume.basics.label = process.argv[2] !== undefined ? process.argv[2] :  resume.basics.label;
     resume.basics.summary = response.basics.summary
     resume.skills = response.skills
     resume.work = response.work
