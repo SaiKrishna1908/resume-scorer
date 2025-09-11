@@ -152,6 +152,15 @@ doc.setTextColor(...headingColor);
 doc.text("PROFESSIONAL EXPERIENCE", margin, y);
 y += 6;
 
+function formatDateToMonthYear(dateStr) {
+  if (dateStr === 'Current' | dateStr === 'Present') {
+    return dateStr
+  }  
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat("en-US", { month: "2-digit", year: "numeric" }).format(date);
+}
+
 resume.work.forEach(job => {
   y = checkPageBreak(doc, y, 10);
   doc.setFontSize(9);
@@ -159,7 +168,10 @@ resume.work.forEach(job => {
   doc.setTextColor(...subHeadingColor);
   doc.text(`${job.name} - ${job.position}`, margin, y);
 
-  const dateText = `${job.startDate} – ${job.endDate || "Present"}`;
+  const start = formatDateToMonthYear(job.startDate);
+  const end = job.endDate ? formatDateToMonthYear(job.endDate) : "Current";
+  const dateText = `${start} – ${end}`;
+
   const dateWidth = doc.getTextWidth(dateText);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(...textColor);
