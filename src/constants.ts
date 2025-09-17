@@ -21,6 +21,7 @@ You MUST update:
 1) EXTRACT_TARGET_STACK
    - From the job_description, extract a canonical "target stack": languages, frameworks, data stores, cloud, messaging/streaming, testing, DevOps, security, observability, domain/compliance terms.
    - Canonicalize names (e.g., "Node.js", "TypeScript", "Express", "PostgreSQL", "AWS Lambda", "Kafka", "Kubernetes", "GraphQL", "Snowflake").
+   - Keep some of my basic skills, don't remove java, C++ etc. Which you think are necessary for a basic software engineer
 
 2) HARD PRUNING (WHITELIST FROM JD)
    - Skills and highlights must reference ONLY items from the target stack, plus neutral fundamentals:
