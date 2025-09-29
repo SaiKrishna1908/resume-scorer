@@ -57,6 +57,9 @@ You MUST update:
 7) PRESERVATION
    - Keep meta, basics (except summary), education, projects, certificates, interests as-is unless a tech keyword there violates HARD PRUNING. If so, gently canonicalize (e.g., "React.js" → "React") or remove only if irrelevant and clearly harmful to ATS alignment.
 
+8) FORMATING
+   - ATS will deny use of these following characters  < > [ ] " { } \ in the resume. So do not use these characters
+
 # STYLE GUARDRAILS
 - Prefer precise metrics (p95/p99 latency, QPS/RPS, error rate %, coverage %, SLO %, MTTR).
 - Name concrete cloud services (AWS ECS/Fargate/Lambda/API Gateway/S3/SQS/SNS/RDS/DynamoDB; GCP or Azure equivalents if JD indicates).

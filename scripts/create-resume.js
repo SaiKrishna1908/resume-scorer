@@ -73,20 +73,49 @@ doc.setFont("helvetica", "bold");
 doc.setTextColor(...headingColor);
 doc.text("SUMMARY", margin, y);
 y += 6;
+
 doc.setFontSize(9);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...textColor);
-const summaryText = doc.splitTextToSize(
-  resume.basics.summary,
-  pageWidth - 2 * margin
-);
-summaryText.forEach((line) => {
-  y = checkPageBreak(doc, y);
-  doc.text(line, margin, y);
-  y += 4;
+
+const maxLineWidth = pageWidth - 2 * margin;
+const words = resume.basics.summary.split(/\s+/).filter(word => word.length > 0); // Split on whitespace, filter empty
+let currentLine = "";
+let lineStartY = y; // Track starting y for this section to match original adjustment
+
+words.forEach((word) => {
+  const testLine = currentLine.length > 0 ? `${currentLine} ${word}` : word;
+  const testWidth = doc.getTextWidth(testLine);
+
+  // If the test line would overflow, print the current line and start a new one
+  if (testWidth > maxLineWidth) {
+    if (currentLine.length > 0) {
+      // Check for page break before printing
+      lineStartY = checkPageBreak(doc, lineStartY, 4);
+      doc.text(currentLine, margin, lineStartY);
+      lineStartY += 4;
+    }
+    currentLine = word;
+
+    // If even a single word is too long, we'll let it overflow for now (common in resumes; consider hyphenation if needed)
+    const wordWidth = doc.getTextWidth(word);
+    if (wordWidth > maxLineWidth) {
+      // Optional: Log or handle long words, e.g., insert manual hyphen
+      // For simplicity, proceed (it will overflow like splitTextToSize)
+    }
+  } else {
+    currentLine = testLine;
+  }
 });
 
-y -= 4;
+// Print the last line if any
+if (currentLine.length > 0) {
+  lineStartY = checkPageBreak(doc, lineStartY, 4);
+  doc.text(currentLine, margin, lineStartY);
+  lineStartY += 4;
+}
+
+y = lineStartY - 4; // Match original y -= 4 adjustment
 
 drawSectionDivider(y + 2);
 
@@ -215,18 +244,20 @@ resume.work.forEach((job) => {
 
 y -= 4;
 
-drawSectionDivider(y + 2);
-y += 7;
+if (resume.education) {
 
-// Education
-y = checkPageBreak(doc, y);
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...headingColor);
-doc.text("EDUCATION", margin, y);
-y += 6;
+  drawSectionDivider(y + 2);
+  y += 7;
 
-resume.education.forEach((edu) => {
+  // Education
+  y = checkPageBreak(doc, y);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...headingColor);
+  doc.text("EDUCATION", margin, y);
+  y += 6;
+
+  resume.education.forEach((edu) => {
   y = checkPageBreak(doc, y);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
@@ -246,6 +277,7 @@ resume.education.forEach((edu) => {
   // doc.text(, margin, y);
   y += 4;
 });
+}
 
 y -= 4;
 
