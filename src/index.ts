@@ -25,10 +25,11 @@ async function main() {
     const partialResume = {
       basics: { summary: resume.basics.summary },
       skills: resume.skills,
-      work: resume.work
+      work: resume.work,
+      projects: resume.projects
     };
     
-    const userMessage = `Job Description:\n${jobDescriptionRaw}\n\nResume (only summary, skills, and work sections):\n${JSON.stringify(partialResume, null, 2)}`;
+    const userMessage = `Job Description:\n${jobDescriptionRaw}\n\nResume (only summary, skills, projects and work sections):\n${JSON.stringify(partialResume, null, 2)}`;
 
     const response = await runLLM({ systemPrompt: PROMPT_RESUME_TAILOR, userMessage });
     

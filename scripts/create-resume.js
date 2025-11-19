@@ -57,10 +57,13 @@ const contactLine = `${resume.basics.phone} | ${resume.basics.email} | ${resume.
 let contactWidth = doc.getTextWidth(contactLine);
 doc.text(contactLine, (pageWidth - contactWidth) / 2, y);
 
-y += 5;
-const linksLine = `${resume.basics.profiles[0].url} | ${resume.basics.profiles[1].url}`;
-let linksWidth = doc.getTextWidth(linksLine);
-doc.text(linksLine, (pageWidth - linksWidth) / 2, y);
+if (resume.basics.profiles !== undefined && resume.basics.profiles.length > 0) {
+  y += 5;
+  const linksLine = `${resume.basics.profiles[0].url} | ${resume.basics.profiles[1].url}`;
+  let linksWidth = doc.getTextWidth(linksLine);
+  doc.text(linksLine, (pageWidth - linksWidth) / 2, y);
+
+}
 
 drawSectionDivider(y + 2);
 
@@ -221,14 +224,14 @@ resume.work.forEach((job) => {
   doc.text(job.location, margin, y);
   y += 4;
 
-  if (job.summary) {
-    const jobSummary = doc.splitTextToSize(job.summary, pageWidth - 2 * margin);
-    jobSummary.forEach((line) => {
-      y = checkPageBreak(doc, y);
-      doc.text(line, margin, y);
-      y += 5;
-    });
-  }
+  // if (job.summary) {
+  //   const jobSummary = doc.splitTextToSize(job.summary, pageWidth - 2 * margin);
+  //   jobSummary.forEach((line) => {
+  //     y = checkPageBreak(doc, y);
+  //     doc.text(line, margin, y);
+  //     y += 5;
+  //   });
+  // }
 
   job.highlights.forEach((point) => {
     const lines = doc.splitTextToSize(`• ${point}`, pageWidth - 2 * margin - 4);
@@ -283,16 +286,17 @@ y -= 4;
 
 drawSectionDivider(y + 2);
 y += 7;
-
+  
 // Projects
-y = checkPageBreak(doc, y);
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...headingColor);
-doc.text("PROJECTS", margin, y);
-y += 6;
+if (resume.projects !== undefined &&  resume.projects.length > 0) {
+  y = checkPageBreak(doc, y);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...headingColor);
+  doc.text("PROJECTS", margin, y);
+  y += 6;
 
-resume.projects.forEach((project) => {
+  resume.projects.forEach((project) => {
   y = checkPageBreak(doc, y);
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
@@ -331,9 +335,16 @@ resume.projects.forEach((project) => {
   y += 2;
 });
 
-y -= 6;
-drawSectionDivider(y + 2);
-y += 7;
+
+}
+
+
+
+if (resume.projects !== undefined &&  resume.projects.length > 0) {
+  y -= 6;
+  drawSectionDivider(y + 2);
+  y += 7;
+}
 
 // Certifications
 y = checkPageBreak(doc, y);
@@ -359,16 +370,22 @@ resume.certificates.forEach((cert) => {
 
 y -= 4;
 
+
+
+if (resume.interests.length > 0) {
+
 drawSectionDivider(y + 2);
 y += 7;
 
-// Programming Profiles
+  // Programming Profiles
 y = checkPageBreak(doc, y);
 doc.setFontSize(10);
 doc.setFont("helvetica", "bold");
 doc.setTextColor(...headingColor);
 doc.text("PROGRAMMING PROFILES", margin, y);
 y += 6;
+
+}
 
 resume.interests.forEach((profile) => {
   y = checkPageBreak(doc, y);
