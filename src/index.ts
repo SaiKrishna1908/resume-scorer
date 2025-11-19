@@ -15,42 +15,7 @@ const JD_PATH = path.resolve(__dirname, "../resume/jd.txt");
 const RESUME_PATH = path.resolve(__dirname, "../resume/resume.json");
 
 async function main() {
-  const tools = [
-    {
-      name: "fetchJobInfo",
-      description: "Fetch job title, domain, and description from a job URL.",
-      parameters: z.object({
-        reasoning: z.string().describe("why did you pick this tool?"),
-        jobTitle: z.string().describe("Extract the job title"),
-        companyDomain: z.string().describe("What's the compnay domain ?"),
-        jobDescription: z
-          .string()
-          .describe("What's the job description for this job posting ?"),
-      }),
-    },
-    {
-      name: "extractATSKeywords",
-      description: "Extract ATS keywords from job description.",
-    },
-    {
-      name: "editResumeSummary",
-      description: "Edit resume summary section based on job description.",
-    },
-    {
-      name: "editResumeSkills",
-      description: "Edit resume skills section based on ATS keywords.",
-    },
-    {
-      name: "editResumeExperience",
-      description:
-        "Edit professional experience section based on updated skills.",
-    },
-    {
-      name: "enhanceProject",
-      description: "Enhance a project from GitHub for resume.",
-    },
-  ];
-
+  
   const fetchJobInfoTool = {
     name: "fetchJobInfo",
     description: "Fetch job title, domain, and description from a job URL.",
@@ -70,6 +35,14 @@ async function main() {
       jobDescription: z
         .string()
         .describe("job description to extract skills from"),
+      existingSkills: z
+        .array(
+          z.object({
+            name: z.string(),
+            keywords: z.array(z.string()),
+          })
+        )
+        .describe("Pass the existing skills from the user's resume"),
     }),
   };
 
