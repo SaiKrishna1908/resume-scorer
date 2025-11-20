@@ -6,6 +6,7 @@ import {
   resumeSkillsSectionEditor,
   resumeProfessionalExperienceSectionEditor,
   projectEnhancerTool,
+  generateResumePDF,
 } from "./tools";
 
 export const runTool = async (
@@ -74,6 +75,12 @@ export const runTool = async (
           throw new Error("Missing required parameters: githubUrl, jobTitle, or atsKeywords");
         }
         const result = await projectEnhancerTool(githubUrl, jobTitle, atsKeywords);
+        return result;
+      }
+
+      case "generatePDF": {
+        const { companyName } = toolArgs;
+        const result = await generateResumePDF(companyName);
         return result;
       }
 

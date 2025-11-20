@@ -19,5 +19,5 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/*"]
+  "include": ["src/*", "src/tools/tools.ts", "src/tools/toolRunner.ts", "src/llm/ai.ts", "src/llm/llm.ts", "src/llm/agent.ts", "src/utils/constants.ts", "src/entity/resume.ts", "src/entity/memory.ts", "src/utils/ui.ts"]
 }

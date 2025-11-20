@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "init": "resumed init",
-    "start": "npx tsx src/index.ts && node scripts/create-resume.js",
+    "start": "npx tsx src/index.ts",
     "create-resume": "node scripts/create-resume.js"
   },
   "dependencies": {

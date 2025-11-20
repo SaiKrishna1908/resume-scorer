@@ -1,5 +1,5 @@
 import { readFile, writeFile } from "fs/promises";
-import type { ATSKeywords } from "../types";
+import type { ATSKeywords } from "../../types";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -65,12 +65,28 @@ export class Resume {
     this.professionalExperience = professionalExperience;
   }
 
+  async getResume(): Promise<any> {
+    try {
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const OUTPUT_RESUME_PATH = path.resolve(__dirname, "../../output/resume.json");
+      
+      const resumeContent = await readFile(OUTPUT_RESUME_PATH, "utf-8");
+      const resume = JSON.parse(resumeContent);
+      
+      return resume;
+    } catch (error) {
+      console.error("Error reading resume:", error);
+      throw new Error(`Failed to read resume: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   async updateResume(): Promise<void> {
     try {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
-      const OUTPUT_RESUME_PATH = path.resolve(__dirname, "../output/resume.json");
-      const RESUME_PATH = path.resolve(__dirname, "../resume/resume.json");
+      const OUTPUT_RESUME_PATH = path.resolve(__dirname, "../../output/resume.json");
+      const RESUME_PATH = path.resolve(__dirname, "../../resume/resume.json");
       
       const resumeContent = await readFile(RESUME_PATH, "utf-8");
       const resume = JSON.parse(resumeContent);
@@ -94,7 +110,7 @@ export class Resume {
       }
       
       await writeFile(OUTPUT_RESUME_PATH, JSON.stringify(resume, null, 2), "utf-8");
-      console.log(`✅ Resume updated successfully at: ${OUTPUT_RESUME_PATH}`);
+      console.log(`Resume updated successfully at: ${OUTPUT_RESUME_PATH}`);
     } catch (error) {
       console.error("Error updating resume:", error);
       throw new Error(`Failed to update resume: ${error instanceof Error ? error.message : String(error)}`);

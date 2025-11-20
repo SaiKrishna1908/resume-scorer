@@ -1,12 +1,12 @@
 import "dotenv/config";
-import { runLLM } from "./llm";
+import { runLLM } from "./llm/llm";
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { PROMPT_RESUME_TAILOR } from "./constants";
-import { runAgent } from "./agent";
+import { PROMPT_RESUME_TAILOR } from "./utils/constants";
+import { runAgent } from "./llm/agent";
 import z from "zod";
-import { Resume } from "./resume";
+import { Resume } from "./entity/resume";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -130,6 +130,21 @@ async function main() {
     }),
   };
 
+  const generatePDFTool = {
+    name: "generatePDF",
+    description:
+      "Generate a PDF version of the tailored resume. This should be called after all resume sections have been updated.",
+    parameters: z.object({
+      reasoning: z.string().describe("Why did you pick this tool?"),
+      companyName: z
+        .string()
+        .default("default")
+        .nullable()
+        .optional()
+        .describe("Optional company name to include in the PDF filename"),
+    }),
+  };  
+
   try {
     const [jobDescriptionRaw, resumeRaw] = await Promise.all([
       readFile(JD_PATH, "utf-8"),
@@ -154,6 +169,7 @@ async function main() {
         editResumeSkillsTool,
         editResumeExperienceTool,
         enhanceProjectTool,
+        generatePDFTool,
       ],
     });
     resumeObj.updateResume()

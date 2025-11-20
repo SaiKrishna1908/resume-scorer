@@ -20,6 +20,8 @@ You must use the following tools **once and only once**, in the exact order list
 
 6. **enhanceProject**: (optional) Takes a GitHub URL and rewrites a project to align with the job.
 
+7. **generatePDF**: Generates a PDF version of the tailored resume. This should be called LAST, after all resume sections have been updated.
+
 ## Execution Plan
 
 Follow this exact plan:
@@ -28,7 +30,8 @@ Follow this exact plan:
 2. Pass its result to "extractATSKeywords".
 3. Use both outputs to call "editResumeSummary", "editResumeSkills", and \`editResumeExperience\`, in that order.
 4. Optionally call \`enhanceProject\` if a GitHub URL is provided.
-5. Combine all updated resume sections and return the **final tailored resume in JSON format**.
+5. Call "generatePDF" to create the final PDF resume with the company name if available.
+6. Return a summary message confirming all updates and PDF generation.
 
 ## Rules
 
@@ -36,5 +39,6 @@ Follow this exact plan:
 - Wait for each tool's response before continuing.
 - Do not infer missing tool outputs. Wait for them.
 - If any required data is missing (e.g., job description), ask the user for it.
-- Final output must preserve the structure of the original resume, but adapt the content to match the job.
+- Always call "generatePDF" as the final step after all resume updates are complete.
+- Extract the company name from the job description and pass it to generatePDF for the filename.
 `;

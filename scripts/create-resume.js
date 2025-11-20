@@ -9,7 +9,6 @@ const doc = new jsPDF();
 const margin = 10;
 let y = margin;
 const pageHeight = doc.internal.pageSize.getHeight();
-const SECTIONS_Y_LENGTH_BETWEEN_TITLE_AND_POINTS = 3;
 
 // Colors
 const headingColor = [0, 51, 102]; // Dark blue for headings
@@ -53,16 +52,15 @@ y += 6;
 doc.setFontSize(10);
 doc.setFont("helvetica", "normal");
 doc.setTextColor(...textColor);
-const contactLine = `${resume.basics.phone} | ${resume.basics.email} | ${resume.basics.location.city}, TX`;
+const contactLine = `${resume.basics.phone} | ${resume.basics.email} | ${resume.basics.location.city}, ${resume.basics.location.region}`;
 let contactWidth = doc.getTextWidth(contactLine);
 doc.text(contactLine, (pageWidth - contactWidth) / 2, y);
 
 if (resume.basics.profiles !== undefined && resume.basics.profiles.length > 0) {
   y += 5;
-  const linksLine = `${resume.basics.profiles[0].url} | ${resume.basics.profiles[1].url}`;
+  const linksLine = `${resume.basics.profiles[0].url}`;
   let linksWidth = doc.getTextWidth(linksLine);
   doc.text(linksLine, (pageWidth - linksWidth) / 2, y);
-
 }
 
 drawSectionDivider(y + 2);
@@ -82,7 +80,9 @@ doc.setFont("helvetica", "normal");
 doc.setTextColor(...textColor);
 
 const maxLineWidth = pageWidth - 2 * margin;
-const words = resume.basics.summary.split(/\s+/).filter(word => word.length > 0); // Split on whitespace, filter empty
+const words = resume.basics.summary
+  .split(/\s+/)
+  .filter((word) => word.length > 0); // Split on whitespace, filter empty
 let currentLine = "";
 let lineStartY = y; // Track starting y for this section to match original adjustment
 
@@ -248,7 +248,6 @@ resume.work.forEach((job) => {
 y -= 4;
 
 if (resume.education) {
-
   drawSectionDivider(y + 2);
   y += 7;
 
@@ -261,34 +260,33 @@ if (resume.education) {
   y += 6;
 
   resume.education.forEach((edu) => {
-  y = checkPageBreak(doc, y);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...subHeadingColor);
-  doc.text(`${edu.studyType} in ${edu.area}`, margin, y);
-  // y += 4;
+    y = checkPageBreak(doc, y);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...subHeadingColor);
+    doc.text(`${edu.studyType} in ${edu.area}`, margin, y);
+    // y += 4;
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...textColor);
-  const educationDetails = `${edu.institution}, GPA: ${edu.gpa}`;
-  doc.text(
-    educationDetails,
-    pageWidth - margin - doc.getTextWidth(educationDetails),
-    y
-  );
-  // doc.text(, margin, y);
-  y += 4;
-});
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...textColor);
+    const educationDetails = `${edu.institution}`;
+    doc.text(
+      educationDetails,
+      pageWidth - margin - doc.getTextWidth(educationDetails),
+      y
+    );
+    // doc.text(, margin, y);
+    y += 4;
+  });
 }
 
 y -= 4;
 
-drawSectionDivider(y + 2);
-y += 7;
-  
 // Projects
-if (resume.projects !== undefined &&  resume.projects.length > 0) {
+if (resume.projects !== undefined && resume.projects.length > 0) {
+  drawSectionDivider(y + 2);
+  y += 7;
   y = checkPageBreak(doc, y);
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
@@ -297,122 +295,122 @@ if (resume.projects !== undefined &&  resume.projects.length > 0) {
   y += 6;
 
   resume.projects.forEach((project) => {
-  y = checkPageBreak(doc, y);
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...subHeadingColor);
-  doc.text(project.name, margin, y);
-
-  const nameWidth = doc.getTextWidth(project.name + " ");
-  doc.setFontSize(9);
-  doc.setTextColor(...linkColor);
-  doc.textWithLink(`(${project.url})`, margin + nameWidth, y, {
-    url: project.url,
-  });
-  doc.setTextColor(...textColor);
-  y += 5;
-
-  doc.setFont("helvetica", "normal");
-  const wrappedDescription = doc.splitTextToSize(
-    project.description,
-    pageWidth - 2 * margin
-  );
-  wrappedDescription.forEach((line) => {
     y = checkPageBreak(doc, y);
-    doc.text(line, margin, y);
-    y += 5;
-  });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...subHeadingColor);
+    doc.text(project.name, margin, y);
 
-  (project.highlights || []).forEach((pt) => {
-    const lines = doc.splitTextToSize(`• ${pt}`, pageWidth - 2 * margin - 4);
-    lines.forEach((line) => {
-      y = checkPageBreak(doc, y);
-      doc.text(line, margin + 4, y);
-      y += 4.0;
+    const nameWidth = doc.getTextWidth(project.name + " ");
+    doc.setFontSize(9);
+    doc.setTextColor(...linkColor);
+    doc.textWithLink(`(${project.url})`, margin + nameWidth, y, {
+      url: project.url,
     });
+    doc.setTextColor(...textColor);
+    y += 5;
+
+    doc.setFont("helvetica", "normal");
+    const wrappedDescription = doc.splitTextToSize(
+      project.description,
+      pageWidth - 2 * margin
+    );
+    wrappedDescription.forEach((line) => {
+      y = checkPageBreak(doc, y);
+      doc.text(line, margin, y);
+      y += 5;
+    });
+
+    (project.highlights || []).forEach((pt) => {
+      const lines = doc.splitTextToSize(`• ${pt}`, pageWidth - 2 * margin - 4);
+      lines.forEach((line) => {
+        y = checkPageBreak(doc, y);
+        doc.text(line, margin + 4, y);
+        y += 4.0;
+      });
+    });
+
+    y += 2;
   });
-
-  y += 2;
-});
-
-
 }
 
-
-
-if (resume.projects !== undefined &&  resume.projects.length > 0) {
+if (resume.projects !== undefined && resume.projects.length > 0) {
   y -= 6;
   drawSectionDivider(y + 2);
   y += 7;
 }
 
 // Certifications
-y = checkPageBreak(doc, y);
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...headingColor);
-doc.text("CERTIFICATIONS", margin, y);
-y += 6;
-doc.setFontSize(9);
-doc.setFont("helvetica", "normal");
-doc.setTextColor(...textColor);
 
-resume.certificates.forEach((cert) => {
+if (resume.certificates !== undefined) {
   y = checkPageBreak(doc, y);
-  const certLine = `• ${cert.name} - `;
-  const textWidth = doc.getTextWidth(certLine);
-  doc.text(certLine, margin, y);
-  doc.setTextColor(...linkColor);
-  doc.textWithLink("Link", margin + textWidth, y, { url: cert.url });
-  doc.setTextColor(...textColor);
-  y += 3.8;
-});
-
-y -= 4;
-
-
-
-if (resume.interests.length > 0) {
-
-drawSectionDivider(y + 2);
-y += 7;
-
-  // Programming Profiles
-y = checkPageBreak(doc, y);
-doc.setFontSize(10);
-doc.setFont("helvetica", "bold");
-doc.setTextColor(...headingColor);
-doc.text("PROGRAMMING PROFILES", margin, y);
-y += 6;
-
-}
-
-resume.interests.forEach((profile) => {
-  y = checkPageBreak(doc, y);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...headingColor);
+  doc.text("CERTIFICATIONS", margin, y);
+  y += 6;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...textColor);
-  const profileLine = `• ${profile.name} - `;
-  const profileWidth = doc.getTextWidth(profileLine);
-  doc.text(profileLine, margin, y);
-  doc.setTextColor(...linkColor);
-  doc.textWithLink(profile.url, margin + profileWidth, y, { url: profile.url });
-  doc.setTextColor(...textColor);
-  y += 3.8;
-});
+  resume.certificates.forEach((cert) => {
+    y = checkPageBreak(doc, y);
+    const certLine = `• ${cert.name} - `;
+    const textWidth = doc.getTextWidth(certLine);
+    doc.text(certLine, margin, y);
+    doc.setTextColor(...linkColor);
+    doc.textWithLink("Link", margin + textWidth, y, { url: cert.url });
+    doc.setTextColor(...textColor);
+    y += 3.8;
+  });
 
+  y -= 4;
+}
+
+if (resume.interests !== undefined && resume.interests.length > 0) {
+  drawSectionDivider(y + 2);
+  y += 7;
+
+  // Programming Profiles
+  y = checkPageBreak(doc, y);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...headingColor);
+  doc.text("PROGRAMMING PROFILES", margin, y);
+  y += 6;
+}
+
+if (resume.interests !== undefined) {
+  resume.interests.forEach((profile) => {
+    y = checkPageBreak(doc, y);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...textColor);
+    const profileLine = `• ${profile.name} - `;
+    const profileWidth = doc.getTextWidth(profileLine);
+    doc.text(profileLine, margin, y);
+    doc.setTextColor(...linkColor);
+    doc.textWithLink(profile.url, margin + profileWidth, y, {
+      url: profile.url,
+    });
+    doc.setTextColor(...textColor);
+    y += 3.8;
+  });
+}
 
 // Save PDF with dynamic path
 const getFlag = (name) => {
   const args = process.argv.slice(2);
-  const withEq = args.find(a => a.startsWith(`${name}=`));
+  const withEq = args.find((a) => a.startsWith(`${name}=`));
   if (withEq) return withEq.split("=", 2)[1];
   const idx = args.indexOf(name);
   return idx >= 0 ? args[idx + 1] : undefined;
 };
 
 const sanitize = (s = "") =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
 
 const companyFlag = getFlag("--company");
 const downloadsDir = path.join(os.homedir(), "Downloads");
@@ -422,7 +420,9 @@ if (!existsSync(downloadsDir)) {
   mkdirSync(downloadsDir, { recursive: true });
 }
 
-const fileName = `Sai_Krishna_Gadiraju_Resume${companyFlag ? `_${sanitize(companyFlag)}` : ""}.pdf`;
+const fileName = `Sai_Krishna_Gadiraju_Resume${
+  companyFlag ? `_${sanitize(companyFlag)}` : ""
+}.pdf`;
 const fullPath = path.join(downloadsDir, fileName);
 
 doc.save(fullPath);
